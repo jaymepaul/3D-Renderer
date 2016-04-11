@@ -6,7 +6,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * If you run this file as a JUnit test, it automatically runs the whole test suite.
- * 
+ *
  * @author tony
  */
 
