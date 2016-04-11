@@ -7,7 +7,7 @@ import renderer.Scene.Polygon;
 /**
  * The Pipeline class has method stubs for all the major components of the
  * rendering pipeline, for you to fill in.
- * 
+ *
  * Some of these methods can get quite long, in which case you should strongly
  * consider moving them out into their own file. You'll need to update the
  * imports in the test suite if you do.
@@ -27,7 +27,7 @@ public class Pipeline {
 	 * Computes the colour of a polygon on the screen, once the lights, their
 	 * angles relative to the polygon's face, and the reflectance of the polygon
 	 * have been accounted for.
-	 * 
+	 *
 	 * @param lightDirection
 	 *            The Vector3D pointing to the directional light read in from
 	 *            the file.
@@ -46,7 +46,7 @@ public class Pipeline {
 	 * This method should rotate the polygons and light such that the viewer is
 	 * looking down the Z-axis. The idea is that it returns an entirely new
 	 * Scene object, filled with new Polygons, that have been rotated.
-	 * 
+	 *
 	 * @param scene
 	 *            The original Scene.
 	 * @param xRot
@@ -65,7 +65,7 @@ public class Pipeline {
 
 	/**
 	 * This should translate the scene by the appropriate amount.
-	 * 
+	 *
 	 * @param scene
 	 * @return
 	 */
@@ -76,7 +76,7 @@ public class Pipeline {
 
 	/**
 	 * This should scale the scene.
-	 * 
+	 *
 	 * @param scene
 	 * @return
 	 */
@@ -97,10 +97,10 @@ public class Pipeline {
 	/**
 	 * Fills a zbuffer with the contents of a single edge list according to the
 	 * lecture slides.
-	 * 
+	 *
 	 * The idea here is to make zbuffer and zdepth arrays in your main loop, and
 	 * pass them into the method to be modified.
-	 * 
+	 *
 	 * @param zbuffer
 	 *            A double array of colours representing the Color at each pixel
 	 *            so far.

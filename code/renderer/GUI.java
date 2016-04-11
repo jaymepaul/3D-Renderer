@@ -30,7 +30,7 @@ import javax.swing.border.Border;
  * implement: onLoad, onKeyPress, and render. There is a method to get the
  * ambient light level set by the sliders. You are free to use this class as-is,
  * modify it, or ignore it completely.
- * 
+ *
  * @author tony
  */
 public abstract class GUI {
