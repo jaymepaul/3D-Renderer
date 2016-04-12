@@ -71,6 +71,7 @@ public class Renderer extends GUI {
 		/*
 		 * This method should be used to rotate the user's viewpoint.
 		 */
+		//EV -KV_LEFT, RIGHT ETC..
 	}
 
 	@Override
@@ -83,6 +84,10 @@ public class Renderer extends GUI {
 		 * static method stubs in the Pipeline class, which you also need to
 		 * fill in.
 		 */
+		for(Scene.Polygon p : scene.getPolygons()){
+			
+		}
+
 		return null;
 	}
 
