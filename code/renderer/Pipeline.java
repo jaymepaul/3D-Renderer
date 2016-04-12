@@ -266,6 +266,8 @@ public class Pipeline {
 	 */
 	public static void computeZBuffer(Color[][] zbuffer, float[][] zdepth, EdgeList polyEdgeList, Color polyColor) {
 		// TODO fill this in.
+
+
 	}
 }
 

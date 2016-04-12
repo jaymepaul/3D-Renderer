@@ -71,7 +71,7 @@ public class ShadingTests {
 
 		assertEquals(expected, shading);
 	}
-	
+
 	@Test
 	/**
 	 * Now let's test the light coming in at an angle.

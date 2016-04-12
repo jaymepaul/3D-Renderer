@@ -85,7 +85,7 @@ public class Renderer extends GUI {
 		 * fill in.
 		 */
 		for(Scene.Polygon p : scene.getPolygons()){
-			
+
 		}
 
 		return null;
