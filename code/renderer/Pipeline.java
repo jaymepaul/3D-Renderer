@@ -62,26 +62,26 @@ public class Pipeline {
 		System.out.println(v1.toString() +"\t"+ v2.toString() +"\t"+ v3.toString());
 		Vector3D a1 = v2.minus(v1);
 		Vector3D b2 = v3.minus(v2);
-		
+
 		System.out.println("MINUS VECT.. "+a1.toString() + "\t"+ b2.toString());
 
 		Vector3D n = a1.crossProduct(b2);		//Compute Normal to Surface
-		
+
 		System.out.println("CROSS PRODUCT - NORMAL: " +n.toString());
 
 		float nFactor = (float) Math.sqrt(Math.pow(n.x, 2) + Math.pow(n.y, 2) + Math.pow(n.z, 2));
-		Vector3D unitNormal = new Vector3D( n.x / nFactor, n.x / nFactor, n.x / nFactor);	//Compute Unit Normal
+		Vector3D unitNormal = new Vector3D( n.x / nFactor, n.y / nFactor, n.z / nFactor);	//Compute Unit Normal
 
-		float costh = n.cosTheta(lightDirection);
-		
+		float costh = unitNormal.cosTheta(lightDirection);
+
 		System.out.println("COSTH: "+costh);
 
-		int r = (int) ((ambientLight.getRed() + costh) * lightColor.getRed());
-		int g = (int) ((ambientLight.getGreen() + costh) * lightColor.getGreen());
-		int b = (int) ((ambientLight.getBlue() + costh) * lightColor.getBlue());
+		int r = (int) ((ambientLight.getRed() + costh) * poly.reflectance.getRed());
+		int g = (int) ((ambientLight.getGreen() + costh) * poly.reflectance.getGreen());
+		int b = (int) ((ambientLight.getBlue() + costh) * poly.reflectance.getBlue());
 
 		System.out.println(r + ","+g + ","+b);
-		
+
 		return new Color(r,g,b);
 	}
 
@@ -111,7 +111,7 @@ public class Pipeline {
 		Transform RotY = Transform.newYRotation(yRot);
 		Transform RotZ = Transform.newZRotation(xRot*yRot);
 		Transform Rot = RotZ.compose(RotX.compose(RotY));
-		
+
 		for(Polygon p : scene.getPolygons()){					//Rotate each polygon
 			for(Vector3D v : p.vertices)
 				Rot.multiply(v);
@@ -275,10 +275,10 @@ public class Pipeline {
 		// TODO fill this in.
 
 		for(int y = 0; y < EL.getEdgeListSize(); y++){
-			
+
 			float x = EL.getLeftZ(y), z = EL.getLeftZ(y);
 			float mz = (EL.getRightZ(y) - EL.getLeftZ(y)) / (EL.getRightX(y) - EL.getLeftX(y));
-			
+
 			while( x <= EL.getRightX(y)){
 				if(z < zDepth[(int) x][y]){
 					zDepth[(int)x][y] = z;
@@ -288,7 +288,7 @@ public class Pipeline {
 				x++;
 			}
 		}
-		
+
 	}
 }
 
