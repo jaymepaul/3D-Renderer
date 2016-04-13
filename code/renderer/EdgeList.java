@@ -13,8 +13,7 @@ import java.util.List;
  */
 public class EdgeList {
 
-	private int[][] edgeListLeft;
-	private int[][] edgeListRight;
+	private int[][] edgeListArr;
 	private int startY;
 	private int endY;
 
@@ -24,8 +23,7 @@ public class EdgeList {
 		this.startY = startY;
 		this.endY = endY;
 
-		this.edgeListLeft = new int[endY - startY][2];
-		this.edgeListRight = new int[endY - startY][2];
+		this.edgeListArr = new int[endY - startY][4];
 
 	}
 
@@ -34,12 +32,12 @@ public class EdgeList {
 	public void addRow(int y, int xLeft, int xRight, int zLeft, int zRight){
 
 		if(xLeft != 0 && zLeft != 0){
-			edgeListLeft[y][0] = xLeft;
-			edgeListLeft[y][1] = zLeft;			//Left List
+			edgeListArr[y][0] = xLeft;
+			edgeListArr[y][1] = zLeft;			//Left List
 		}
 		if(xRight != 0 && zRight!= 0){
-			edgeListRight[y][0] = xRight;
-			edgeListRight[y][1] = zRight;		//Right List
+			edgeListArr[y][2] = xRight;
+			edgeListArr[y][3] = zRight;		//Right List
 		}
 	}
 
@@ -55,24 +53,27 @@ public class EdgeList {
 
 	public float getLeftX(int y) {
 		// TODO fill this in.
-		return edgeListLeft[y][0];
+		return edgeListArr[y][0];
 	}
 
 	public float getRightX(int y) {
 		// TODO fill this in.
-		return edgeListRight[y][0];
+		return edgeListArr[y][2];
 	}
 
 	public float getLeftZ(int y) {
 		// TODO fill this in.
-		return edgeListLeft[y][1];
+		return edgeListArr[y][1];
 	}
 
 	public float getRightZ(int y) {
 		// TODO fill this in.
-		return edgeListRight[y][1];
+		return edgeListArr[y][3];
 	}
 
+	public int getEdgeListSize(){
+		return edgeListArr.length-1;
+	}
 
 }
 

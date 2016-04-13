@@ -59,20 +59,29 @@ public class Pipeline {
 		//Compute Surface Normal
 		Vector3D v1 = poly.vertices[0]; Vector3D v2 = poly.vertices[1]; Vector3D v3 = poly.vertices[2];
 
+		System.out.println(v1.toString() +"\t"+ v2.toString() +"\t"+ v3.toString());
 		Vector3D a1 = v2.minus(v1);
 		Vector3D b2 = v3.minus(v2);
+		
+		System.out.println("MINUS VECT.. "+a1.toString() + "\t"+ b2.toString());
 
 		Vector3D n = a1.crossProduct(b2);		//Compute Normal to Surface
+		
+		System.out.println("CROSS PRODUCT - NORMAL: " +n.toString());
 
 		float nFactor = (float) Math.sqrt(Math.pow(n.x, 2) + Math.pow(n.y, 2) + Math.pow(n.z, 2));
 		Vector3D unitNormal = new Vector3D( n.x / nFactor, n.x / nFactor, n.x / nFactor);	//Compute Unit Normal
 
-		float costh = unitNormal.cosTheta(lightDirection);
+		float costh = n.cosTheta(lightDirection);
+		
+		System.out.println("COSTH: "+costh);
 
-		int r = (int) ((ambientLight.getRed() * costh) * lightColor.getRed());
-		int g = (int) ((ambientLight.getGreen() * costh) * lightColor.getGreen());
-		int b = (int) ((ambientLight.getBlue() * costh) * lightColor.getBlue());
+		int r = (int) ((ambientLight.getRed() + costh) * lightColor.getRed());
+		int g = (int) ((ambientLight.getGreen() + costh) * lightColor.getGreen());
+		int b = (int) ((ambientLight.getBlue() + costh) * lightColor.getBlue());
 
+		System.out.println(r + ","+g + ","+b);
+		
 		return new Color(r,g,b);
 	}
 
@@ -98,16 +107,14 @@ public class Pipeline {
 		List<Polygon> polygons = new ArrayList<Polygon>();
 		Vector3D lightPos = null;
 
+		Transform RotX = Transform.newXRotation(xRot);
+		Transform RotY = Transform.newYRotation(yRot);
+		Transform RotZ = Transform.newZRotation(xRot*yRot);
+		Transform Rot = RotZ.compose(RotX.compose(RotY));
+		
 		for(Polygon p : scene.getPolygons()){					//Rotate each polygon
-
-			Transform rotX = Transform.newXRotation(xRot);
-			Transform rotY = Transform.newYRotation(yRot);
-			Transform rot = rotX.compose(rotY);					//Combine Matrices
-
-			for(int i = 0; i < p.getVertices().length; i++){
-				Vector3D vertex = p.getVertices()[i];
-				p.getVertices()[i] = rot.multiply(vertex);		//Apply Rotation to vector
-			}
+			for(Vector3D v : p.vertices)
+				Rot.multiply(v);
 		}
 
 		return new Scene(polygons, lightPos);
@@ -255,19 +262,33 @@ public class Pipeline {
 	 *
 	 * @param zbuffer
 	 *            A double array of colours representing the Color at each pixel
-	 *            so far.
+	 *            so far. zbuffer [pixel][val]
 	 * @param zdepth
 	 *            A double array of floats storing the z-value of each pixel
-	 *            that has been coloured in so far.
+	 *            that has been coloured in so far. Ie. float [pixel][z-val]
 	 * @param polyEdgeList
 	 *            The edgelist of the polygon to add into the zbuffer.
 	 * @param polyColor
 	 *            The colour of the polygon to add into the zbuffer.
 	 */
-	public static void computeZBuffer(Color[][] zbuffer, float[][] zdepth, EdgeList polyEdgeList, Color polyColor) {
+	public static void computeZBuffer(Color[][] zBuffer, float[][] zDepth, EdgeList EL, Color polyColor) {
 		// TODO fill this in.
 
-
+		for(int y = 0; y < EL.getEdgeListSize(); y++){
+			
+			float x = EL.getLeftZ(y), z = EL.getLeftZ(y);
+			float mz = (EL.getRightZ(y) - EL.getLeftZ(y)) / (EL.getRightX(y) - EL.getLeftX(y));
+			
+			while( x <= EL.getRightX(y)){
+				if(z < zDepth[(int) x][y]){
+					zDepth[(int)x][y] = z;
+					zBuffer[(int)x][y] = polyColor ;
+				}
+				z += mz;
+				x++;
+			}
+		}
+		
 	}
 }
 

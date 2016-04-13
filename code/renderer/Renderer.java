@@ -8,11 +8,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Renderer extends GUI {
 
 	private Scene scene;
+	private float INF = (float) Double.POSITIVE_INFINITY;
+	private static double imageWidth = 0;
+	private static double imageHeight = 0;
 
 	@Override
 	protected void onLoad(File file) {
@@ -56,11 +60,33 @@ public class Renderer extends GUI {
 			}
 
 			this.scene = new Scene(polygons, lightVector);
+			
+			//Get imageWidth and imageHeight
+			double maxX = 0, minX = Double.POSITIVE_INFINITY;
+			double maxY = 0, minY = Double.POSITIVE_INFINITY;
+			
+			for(Scene.Polygon p : polygons){
+				for(Vector3D v : p.vertices){
+					if(v.x > maxX)
+						maxX = v.x;
+					else if(v.x < minX)
+						minX = v.x;
+					if(v.y > maxY)
+						maxY = v.y;
+					else if(v.y < minY)
+						minY = v.y;
+				}
+			}
+			
+			imageWidth = maxX - minX;
+			imageHeight = maxY - minY;
 
 			br.close();
 		} catch (IOException e) {
 			throw new RuntimeException("file reading failed.");
 		}
+		
+		
 
 	}
 
@@ -84,8 +110,22 @@ public class Renderer extends GUI {
 		 * static method stubs in the Pipeline class, which you also need to
 		 * fill in.
 		 */
+		
 		for(Scene.Polygon p : scene.getPolygons()){
-
+			
+			//Initialise
+			Color[][] zBuffer = new Color[(int) imageWidth][(int) imageHeight];
+			float[][] zDepth = new float[(int) imageWidth][(int) imageHeight];
+			
+			for(int row = 0; row <= zBuffer.length; row++){
+				for(int col = 0; col <= zBuffer[row].length; col++){
+					zBuffer[row][col] = new Color(49-79-79);
+					zDepth[row][col] = INF;
+				}
+			}
+			
+			Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
+			
 		}
 
 		return null;
