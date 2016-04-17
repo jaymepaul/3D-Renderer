@@ -106,7 +106,7 @@ public class EdgeListTests {
 		Polygon poly = new Polygon(verts, col);
 
 		EdgeList el = Pipeline.computeEdgeList(poly);
-
+		
 		// half-way up the triangle
 		assertEquals(0, el.getLeftX(4), 1e-3);
 		assertEquals(2.33333, el.getRightX(4), 1e-3);
