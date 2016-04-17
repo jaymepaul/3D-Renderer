@@ -60,11 +60,11 @@ public class Renderer extends GUI {
 			}
 
 			this.scene = new Scene(polygons, lightVector);
-			
+
 			//Get imageWidth and imageHeight
 			double maxX = 0, minX = Double.POSITIVE_INFINITY;
 			double maxY = 0, minY = Double.POSITIVE_INFINITY;
-			
+
 			for(Scene.Polygon p : polygons){
 				for(Vector3D v : p.vertices){
 					if(v.x > maxX)
@@ -77,7 +77,7 @@ public class Renderer extends GUI {
 						minY = v.y;
 				}
 			}
-			
+
 			imageWidth = maxX - minX;
 			imageHeight = maxY - minY;
 
@@ -85,8 +85,8 @@ public class Renderer extends GUI {
 		} catch (IOException e) {
 			throw new RuntimeException("file reading failed.");
 		}
-		
-		
+
+
 
 	}
 
@@ -110,22 +110,22 @@ public class Renderer extends GUI {
 		 * static method stubs in the Pipeline class, which you also need to
 		 * fill in.
 		 */
-		
+
 		for(Scene.Polygon p : scene.getPolygons()){
-			
+
 			//Initialise
 			Color[][] zBuffer = new Color[(int) imageWidth][(int) imageHeight];
 			float[][] zDepth = new float[(int) imageWidth][(int) imageHeight];
-			
+
 			for(int row = 0; row <= zBuffer.length; row++){
 				for(int col = 0; col <= zBuffer[row].length; col++){
 					zBuffer[row][col] = new Color(49-79-79);
 					zDepth[row][col] = INF;
 				}
 			}
-			
+
 			Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
-			
+
 		}
 
 		return null;

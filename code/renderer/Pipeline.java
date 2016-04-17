@@ -65,35 +65,25 @@ public class Pipeline {
 		Vector3D a = v2.minus(v1);			//NOTE: Normal Arrangement - OUTWARDS, CounterClockwise
 		Vector3D b = v3.minus(v2);
 
-		double aD = Math.sqrt(Math.pow(a.x, 2) + Math.pow(a.y, 2) + Math.pow(a.z, 2));
-		double bD = Math.sqrt(Math.pow(b.x, 2) + Math.pow(b.y, 2) + Math.pow(b.z, 2));		//Calculate Depth
-		
-		//Normalize Vectors
-		Vector3D aN = new Vector3D((float) (a.x / aD), (float) (a.y / aD), (float) (a.z / aD));
-		Vector3D bN = new Vector3D((float) (b.x / bD), (float) (b.y / bD), (float) (b.z / bD));	
-		
-		System.out.println("MINUS VECT.. "+aN.toString() + "\t"+ bN.toString());
+		Vector3D normal = a.crossProduct(b);		//Compute Normal to Surface
+		Vector3D unitNormal = normal.unitVector();
 
-		Vector3D n = aN.crossProduct(bN);		//Compute Normal to Surface
+		Vector3D unitLightD = lightDirection.unitVector();	//Get Unit Light Direction
 
-		System.out.println("CROSS PRODUCT - NORMAL: " +n.toString());
+		float costh = unitNormal.cosTheta(unitLightD);
+		System.out.println(costh);
 
-		//Normalize Normal Vector
-		float nFactor = (float) Math.sqrt(Math.pow(n.x, 2) + Math.pow(n.y, 2) + Math.pow(n.z, 2));
-		Vector3D unitNormal = new Vector3D( n.x / nFactor, n.y / nFactor, n.z / nFactor);	//Compute Unit Normal
-
-		//Normalize Light Vector
-		float lightFactor = (float) Math.sqrt(Math.pow(lightDirection.x, 2) + Math.pow(lightDirection.y, 2) + Math.pow(lightDirection.z, 2));
-		Vector3D lightNorm = new Vector3D( lightDirection.x / lightFactor, lightDirection.y / lightFactor, lightDirection.z / lightFactor);
-		
-		float costh = unitNormal.cosTheta(lightNorm);
-		
-		
-		int	r = (int) (((ambientLight.getRed() + lightColor.getRed()) * costh) * (poly.reflectance.getRed()));
-		int	g = (int) (((ambientLight.getGreen() + lightColor.getGreen()) * costh) * (poly.reflectance.getGreen()));
-		int	bl = (int) (((ambientLight.getBlue() +  lightColor.getBlue()) *costh) * (poly.reflectance.getBlue()));
-		
-		System.out.println(costh * 255);
+		int r = 0, g = 0, bl = 0;
+		if(lightColor.getRed() == 0 && lightColor.getBlue() == 0 && lightColor.getGreen() == 0){
+			r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh));
+			g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh));
+			bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh));
+		}
+		else{
+			r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed()));
+			g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen()));
+			bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue()));
+		}
 		System.out.println(r + ","+g + ","+bl);
 
 		return new Color(r,g,bl);
@@ -123,7 +113,7 @@ public class Pipeline {
 
 		Transform RotX = Transform.newXRotation(xRot);
 		Transform RotY = Transform.newYRotation(yRot);
-		Transform RotZ = Transform.newZRotation(xRot*yRot);
+		Transform RotZ = Transform.newZRotation(xRot+yRot);
 		Transform Rot = RotZ.compose(RotX.compose(RotY));
 
 		for(Polygon p : scene.getPolygons()){					//Rotate each polygon
@@ -197,11 +187,11 @@ public class Pipeline {
 			if(v != VMaxY && v != VMinY)
 				VMid = v;
 		}
-		
+
 		EdgeList edge = new EdgeList(minY, maxY);
 
 		//How to determine left or right edge
-		
+
 		updateEdgeList(edge, VMinY, VMaxY, VMid);	//Edge: MaxY - MinY
 		updateEdgeList(edge, VMinY, VMid, VMaxY);	//Edge: MinY - MidY
 		updateEdgeList(edge, VMid, VMaxY, VMinY);	//Edge: MidY - MaxY
@@ -213,40 +203,40 @@ public class Pipeline {
 
 		float mx =	(float) ( (Math.pow(VEnd.x,2) - Math.pow(VStart.x,2)) / (Math.pow(VEnd.y, 2) - Math.pow(VStart.y,2)) );
 		float mz =  (float) ( (Math.pow(VEnd.z,2) - Math.pow(VStart.z,2)) / (Math.pow(VEnd.y,2) - Math.pow(VStart.y,2)) );
-	
+
 		float x =  VStart.x; float z = VStart.z;		//Set x and z
 		int i = (int) VStart.y; int maxI = (int)VEnd.y;		//Set indices
-	
+
 		while( i < maxI){
-	
+
 			if(VStart == VMinY && VEnd == VMaxY && refP.x >= VStart.x && refP.x >= VEnd.x)
-				edge.addRow(i, x, INF, z, INF);		
+				edge.addRow(i, x, INF, z, INF);
 			else{
 				if(VStart == VMinY && VEnd == VMid && refP.x >= VStart.x && refP.x >= VEnd.x)
 					edge.addRow(i, x, INF, z, INF);
 				else if(VStart == VMid && VEnd == VMaxY && refP.x >= VStart.x && refP.x <= VEnd.x)
 					edge.addRow(i, x, INF, z, INF);
-				else 
-					edge.addRow(i, INF, x, INF, z);		//RIGHT		
+				else
+					edge.addRow(i, INF, x, INF, z);		//RIGHT
 			}
 			x += mx;
 			z += mz;			//Update values using gradient/slope
-	
+
 			i++;
 		}
-		
+
 		if(VStart == VMinY && VEnd == VMaxY && refP.x >= VStart.x && refP.x >= VEnd.x)		//Insert End
-			edge.addRow(maxI, VEnd.x, INF, VEnd.z,INF); 	
+			edge.addRow(maxI, VEnd.x, INF, VEnd.z,INF);
 		else{
 			if(VStart == VMinY && VEnd == VMid && refP.x >= VStart.x && refP.x >= VEnd.x)
-				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF); 
+				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);
 			else if(VStart == VMid && VEnd == VMaxY && refP.x >= VStart.x && refP.x <= VEnd.x)
-				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF); 
+				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);
 			else
 				edge.addRow(maxI, INF, VEnd.x, INF, VEnd.z);
 		}
 	}
-	
+
 	/**Get minimum y-value from set of vertices*/
 	public static int getMinY(Vector3D[] vertices){
 
