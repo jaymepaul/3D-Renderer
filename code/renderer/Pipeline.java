@@ -62,8 +62,11 @@ public class Pipeline {
 		Vector3D v1 = poly.vertices[0]; Vector3D v2 = poly.vertices[1]; Vector3D v3 = poly.vertices[2];
 
 		System.out.println(v1.toString() +"\t"+ v2.toString() +"\t"+ v3.toString());
-		Vector3D a = v2.minus(v1);			//NOTE: Normal Arrangement - OUTWARDS, CounterClockwise
-		Vector3D b = v3.minus(v2);
+
+
+
+		Vector3D a = (v2.unitVector()).minus(v1.unitVector());			//NOTE: Normal Arrangement - OUTWARDS, CounterClockwise
+		Vector3D b = (v3.unitVector()).minus(v2.unitVector());
 
 		Vector3D normal = a.crossProduct(b);		//Compute Normal to Surface
 		Vector3D unitNormal = normal.unitVector();
@@ -178,25 +181,32 @@ public class Pipeline {
 	public static EdgeList computeEdgeList(Polygon poly) {
 		// TODO fill this in.
 
-		Vector3D[] vertices = poly.getVertices();
 
-		int minY = getMinY(vertices);
-		int maxY = getMaxY(vertices);		//NOTE: Sets VMaxY VMinY Vectors
+		if(!isHidden(poly)){
+			Vector3D[] vertices = poly.getVertices();
 
-		for(Vector3D v : vertices){
-			if(v != VMaxY && v != VMinY)
-				VMid = v;
+			int minY = getMinY(vertices);
+			int maxY = getMaxY(vertices);		//NOTE: Sets VMaxY VMinY Vectors
+
+			for(Vector3D v : vertices){
+				if(v != VMaxY && v != VMinY)
+					VMid = v;
+			}
+
+			EdgeList edge = new EdgeList(minY, maxY);
+
+			//How to determine left or right edge
+
+			updateEdgeList(edge, VMinY, VMaxY, VMid);	//Edge: MaxY - MinY
+			updateEdgeList(edge, VMinY, VMid, VMaxY);	//Edge: MinY - MidY
+			updateEdgeList(edge, VMid, VMaxY, VMinY);	//Edge: MidY - MaxY
+
+			return edge;
 		}
 
-		EdgeList edge = new EdgeList(minY, maxY);
 
-		//How to determine left or right edge
 
-		updateEdgeList(edge, VMinY, VMaxY, VMid);	//Edge: MaxY - MinY
-		updateEdgeList(edge, VMinY, VMid, VMaxY);	//Edge: MinY - MidY
-		updateEdgeList(edge, VMid, VMaxY, VMinY);	//Edge: MidY - MaxY
-
-		return edge;
+		return null;
 	}
 
 	public static void updateEdgeList(EdgeList edge, Vector3D VStart, Vector3D VEnd, Vector3D refP){

@@ -97,7 +97,28 @@ public class Renderer extends GUI {
 		/*
 		 * This method should be used to rotate the user's viewpoint.
 		 */
-		//EV -KV_LEFT, RIGHT ETC..
+		//How to calc xRot yRot?
+		float xRot = 0, yRot = 0;
+		if (ev.getKeyCode() == KeyEvent.VK_LEFT
+				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
+			xRot -= 90;
+			Pipeline.rotateScene(scene, xRot, yRot);
+		}
+		else if (ev.getKeyCode() == KeyEvent.VK_RIGHT
+				|| Character.toUpperCase(ev.getKeyChar()) == 'D'){
+			xRot += 90;
+			Pipeline.rotateScene(scene, xRot, yRot);
+		}
+		else if (ev.getKeyCode() == KeyEvent.VK_DOWN
+				|| Character.toUpperCase(ev.getKeyChar()) == 'S'){
+			yRot -= 90;
+			Pipeline.rotateScene(scene, xRot, yRot);
+		}
+		else if(ev.getKeyCode() == KeyEvent.VK_UP
+				|| Character.toUpperCase(ev.getKeyChar()) == 'W'){
+			yRot += 90;
+			Pipeline.rotateScene(scene, xRot, yRot);
+		}
 	}
 
 	@Override
@@ -110,25 +131,24 @@ public class Renderer extends GUI {
 		 * static method stubs in the Pipeline class, which you also need to
 		 * fill in.
 		 */
+		Color[][] zBuffer = new Color[CANVAS_WIDTH][CANVAS_HEIGHT];
+		float[][] zDepth = new float[CANVAS_WIDTH][CANVAS_HEIGHT];
 
 		for(Scene.Polygon p : scene.getPolygons()){
 
-			//Initialise
-			Color[][] zBuffer = new Color[(int) imageWidth][(int) imageHeight];
-			float[][] zDepth = new float[(int) imageWidth][(int) imageHeight];
-
-			for(int row = 0; row <= zBuffer.length; row++){
-				for(int col = 0; col <= zBuffer[row].length; col++){
-					zBuffer[row][col] = new Color(49-79-79);
-					zDepth[row][col] = INF;
+			if(!Pipeline.isHidden(p)){
+				for(int row = 0; row <= zBuffer.length; row++){
+					for(int col = 0; col <= zBuffer[row].length; col++){
+						zBuffer[row][col] = new Color(49-79-79);
+						zDepth[row][col] = INF;
+					}
 				}
+
+				Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
 			}
-
-			Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
-
 		}
 
-		return null;
+		return convertBitmapToImage(zBuffer);
 	}
 
 	/**
