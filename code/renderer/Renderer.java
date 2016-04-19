@@ -97,7 +97,6 @@ public class Renderer extends GUI {
 		/*
 		 * This method should be used to rotate the user's viewpoint.
 		 */
-		//How to calc xRot yRot?
 		float xRot = 0, yRot = 0;
 		if (ev.getKeyCode() == KeyEvent.VK_LEFT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
@@ -135,17 +134,8 @@ public class Renderer extends GUI {
 		float[][] zDepth = new float[CANVAS_WIDTH][CANVAS_HEIGHT];
 
 		for(Scene.Polygon p : scene.getPolygons()){
-
-			if(!Pipeline.isHidden(p)){
-				for(int row = 0; row <= zBuffer.length; row++){
-					for(int col = 0; col <= zBuffer[row].length; col++){
-						zBuffer[row][col] = new Color(49-79-79);
-						zDepth[row][col] = INF;
-					}
-				}
-
+			if(!Pipeline.isHidden(p))
 				Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
-			}
 		}
 
 		return convertBitmapToImage(zBuffer);

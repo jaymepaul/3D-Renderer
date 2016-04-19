@@ -61,34 +61,17 @@ public class Pipeline {
 		//Compute Surface Normal
 		Vector3D v1 = poly.vertices[0]; Vector3D v2 = poly.vertices[1]; Vector3D v3 = poly.vertices[2];
 
-		System.out.println(v1.toString() +"\t"+ v2.toString() +"\t"+ v3.toString());
+		Vector3D a = (v2).minus(v1);			//NOTE: Normal OUTWARDS, CounterClockwise
+		Vector3D b = (v3).minus(v2);
 
-
-
-		Vector3D a = (v2.unitVector()).minus(v1.unitVector());			//NOTE: Normal Arrangement - OUTWARDS, CounterClockwise
-		Vector3D b = (v3.unitVector()).minus(v2.unitVector());
-
-		Vector3D normal = a.crossProduct(b);		//Compute Normal to Surface
-		Vector3D unitNormal = normal.unitVector();
-
-		Vector3D unitLightD = lightDirection.unitVector();	//Get Unit Light Direction
-
-		float costh = unitNormal.cosTheta(unitLightD);
-		System.out.println(costh);
-
-		int r = 0, g = 0, bl = 0;
-		if(lightColor.getRed() == 0 && lightColor.getBlue() == 0 && lightColor.getGreen() == 0){
-			r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh));
-			g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh));
-			bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh));
-		}
-		else{
-			r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed()));
-			g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen()));
-			bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue()));
-		}
-		System.out.println(r + ","+g + ","+bl);
-
+		Vector3D normal = a.unitVector().crossProduct(b.unitVector());		//Compute Normal to Surface
+	
+		float costh = Math.max(normal.unitVector().cosTheta(lightDirection.unitVector()), 0);	//Compute costh
+		
+		int r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed() / 255.0) );
+		int g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen() / 255.0));
+		int bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue() / 255.0));
+		
 		return new Color(r,g,bl);
 	}
 
@@ -111,20 +94,20 @@ public class Pipeline {
 	public static Scene rotateScene(Scene scene, float xRot, float yRot) {
 		// TODO fill this in.
 
-		List<Polygon> polygons = new ArrayList<Polygon>();
-		Vector3D lightPos = null;
+		List<Polygon> polygons = scene.getPolygons();
 
 		Transform RotX = Transform.newXRotation(xRot);
 		Transform RotY = Transform.newYRotation(yRot);
-		Transform RotZ = Transform.newZRotation(xRot+yRot);
-		Transform Rot = RotZ.compose(RotX.compose(RotY));
+		Transform Rot = RotX.compose(RotY);
 
-		for(Polygon p : scene.getPolygons()){					//Rotate each polygon
-			for(Vector3D v : p.vertices)
-				Rot.multiply(v);
+		for(Polygon p : polygons){					//Rotate each polygon
+			for(int i = 0; i < p.getVertices().length; i++){
+				Vector3D rotV = Rot.multiply(p.getVertices()[i]);		
+				p.getVertices()[i] = rotV;
+			}
 		}
 
-		return new Scene(polygons, lightPos);
+		return new Scene(polygons, Rot.multiply(scene.getLight()));
 	}
 
 	/**
@@ -137,7 +120,6 @@ public class Pipeline {
 		// TODO fill this in.
 
 		List<Polygon> polygons = scene.getPolygons();
-		Vector3D lightPos = scene.getLight();
 
 		Transform trans = Transform.newTranslation(20, 20, 20);
 
@@ -148,7 +130,7 @@ public class Pipeline {
 			}
 		}
 
-		return new Scene(polygons, lightPos);
+		return new Scene(polygons, trans.multiply(scene.getLight()));
 
 	}
 
@@ -161,7 +143,6 @@ public class Pipeline {
 	public static Scene scaleScene(Scene scene) {
 		// TODO fill this in.
 		List<Polygon> polygons = scene.getPolygons();
-		Vector3D lightPos = scene.getLight();
 
 		Transform scale = Transform.newScale(2, 2, 2);
 
@@ -171,7 +152,7 @@ public class Pipeline {
 				p.getVertices()[i] = scale.multiply(vertex);		//Apply transformation to vector
 			}
 		}
-		return new Scene(polygons, lightPos);
+		return new Scene(polygons, scale.multiply(scene.getLight()));
 	}
 
 	/**
@@ -211,8 +192,10 @@ public class Pipeline {
 
 	public static void updateEdgeList(EdgeList edge, Vector3D VStart, Vector3D VEnd, Vector3D refP){
 
-		float mx =	(float) ( (Math.pow(VEnd.x,2) - Math.pow(VStart.x,2)) / (Math.pow(VEnd.y, 2) - Math.pow(VStart.y,2)) );
-		float mz =  (float) ( (Math.pow(VEnd.z,2) - Math.pow(VStart.z,2)) / (Math.pow(VEnd.y,2) - Math.pow(VStart.y,2)) );
+		//Floor = lowest integer - round down, ceiling = round up
+		
+		float mx =	(float) ((((VEnd.x)) - VStart.x) / ((Math.floor(VEnd.y)) - Math.floor(VStart.y)));
+		float mz =  (float) ((((VEnd.z)) - (VStart.z)) / ((Math.floor(VEnd.y)) - (Math.floor(VStart.y))) );
 
 		float x =  VStart.x; float z = VStart.z;		//Set x and z
 		int i = (int) VStart.y; int maxI = (int)VEnd.y;		//Set indices
@@ -300,11 +283,10 @@ public class Pipeline {
 
 		for(int y = 0; y < EL.getEdgeListSize(); y++){
 
-			int x = (int)EL.getLeftZ(y);
-			int z = (int)EL.getLeftZ(y);
+			int x = (int) Math.floor(EL.getLeftX(y));	float z = EL.getLeftZ(y);
 			float mz = (EL.getRightZ(y) - EL.getLeftZ(y)) / (EL.getRightX(y) - EL.getLeftX(y));
-
-			while( x <= EL.getRightX(y)){
+			
+			while( x < Math.floor(EL.getRightX(y))){
 				if(z < zDepth[x][y]){
 					zDepth[x][y] = z;
 					zBuffer[x][y] = polyColor ;

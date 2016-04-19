@@ -33,6 +33,9 @@ public class Scene {
           // TODO fill this in.
           return polygons;
 	}
+	
+
+
 
 	/**
 	 * Polygon stores data about a single polygon in a scene, keeping track of
