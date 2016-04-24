@@ -60,33 +60,20 @@ public class Renderer extends GUI {
 			}
 
 			this.scene = new Scene(polygons, lightVector);
-
-			//Get imageWidth and imageHeight
-			double maxX = 0, minX = Double.POSITIVE_INFINITY;
-			double maxY = 0, minY = Double.POSITIVE_INFINITY;
-
-			for(Scene.Polygon p : polygons){
-				for(Vector3D v : p.vertices){
-					if(v.x > maxX)
-						maxX = v.x;
-					else if(v.x < minX)
-						minX = v.x;
-					if(v.y > maxY)
-						maxY = v.y;
-					else if(v.y < minY)
-						minY = v.y;
-				}
-			}
-
-			imageWidth = maxX - minX;
-			imageHeight = maxY - minY;
-
 			br.close();
 		} catch (IOException e) {
 			throw new RuntimeException("file reading failed.");
 		}
+		
+		//=============TRANSLATE + SCALE=======================
 
-
+		scene.computeBoundingBox();
+		Pipeline.scaleScene(scene);
+		scene.computeBoundingBox();
+		Pipeline.translateScene(scene);
+		
+		//=============TRANSLATE + SCALE=======================
+		
 
 	}
 
@@ -101,21 +88,25 @@ public class Renderer extends GUI {
 		if (ev.getKeyCode() == KeyEvent.VK_LEFT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
 			xRot -= 90;
+			scene.computeBoundingBox();
 			Pipeline.rotateScene(scene, xRot, yRot);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_RIGHT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'D'){
 			xRot += 90;
+			scene.computeBoundingBox();
 			Pipeline.rotateScene(scene, xRot, yRot);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_DOWN
 				|| Character.toUpperCase(ev.getKeyChar()) == 'S'){
 			yRot -= 90;
+			scene.computeBoundingBox();
 			Pipeline.rotateScene(scene, xRot, yRot);
 		}
 		else if(ev.getKeyCode() == KeyEvent.VK_UP
 				|| Character.toUpperCase(ev.getKeyChar()) == 'W'){
 			yRot += 90;
+			scene.computeBoundingBox();
 			Pipeline.rotateScene(scene, xRot, yRot);
 		}
 	}
@@ -130,12 +121,30 @@ public class Renderer extends GUI {
 		 * static method stubs in the Pipeline class, which you also need to
 		 * fill in.
 		 */
+		if(scene == null)
+			return null;
+		
 		Color[][] zBuffer = new Color[CANVAS_WIDTH][CANVAS_HEIGHT];
 		float[][] zDepth = new float[CANVAS_WIDTH][CANVAS_HEIGHT];
-
+		
+		//Initialise
+		for(int i = 0; i < zBuffer.length; i++){
+			for(int j = 0; j < zBuffer[i].length; j++){
+				zBuffer[i][j] = new Color(128,128,128);
+				zDepth[i][j] = INF;
+			}
+		}
+		
+		Vector3D lightVect = scene.getLight();
+		Color lightColor = new Color(255, 255, 255); 	//WHITE
+		Color ambientLight = new Color(getAmbientLight()[0], getAmbientLight()[1], getAmbientLight()[2]);
+		
 		for(Scene.Polygon p : scene.getPolygons()){
-			if(!Pipeline.isHidden(p))
-				Pipeline.computeZBuffer(zBuffer, zDepth, Pipeline.computeEdgeList(p), p.reflectance);
+			if(!Pipeline.isHidden(p)){
+				Color shading  = Pipeline.getShading(p, lightVect, lightColor, ambientLight);
+				EdgeList edgeList = Pipeline.computeEdgeList(p);
+				Pipeline.computeZBuffer(zBuffer, zDepth, edgeList, shading);
+			}
 		}
 
 		return convertBitmapToImage(zBuffer);

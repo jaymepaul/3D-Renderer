@@ -17,11 +17,14 @@ public class Scene {
 
 	private List<Polygon> polygons;
 	private Vector3D lightPos;
+	private BoundingBox box;
+	private float minX, maxX, minY, maxY;
 
 	public Scene(List<Polygon> polygons, Vector3D lightPos) {
           // TODO fill this in.
 		this.polygons = polygons;
 		this.lightPos = lightPos;
+		
 	}
 
 	public Vector3D getLight() {
@@ -34,7 +37,45 @@ public class Scene {
           return polygons;
 	}
 	
+	public void computeBoundingBox(){
+		setMaxMinX();
+		setMaxMinY();
+		this.box = new BoundingBox(minX, maxX, minY, maxY);
+	}
+	
+	public BoundingBox getBoundingBox(){
+		return box;
+	}
+	
+	public void setMaxMinY(){
+		
+		minY = (float) Double.POSITIVE_INFINITY; 
+		maxY = (float) Double.NEGATIVE_INFINITY;
+		
+		for(Polygon p : polygons){
+			for(Vector3D v : p.vertices){
+				if(v.y > maxY)
+					maxY = v.y;
+				else if(v.y < minY)
+					minY = v.y;
+			}
+		}
+		
+	}
+	public void setMaxMinX(){
 
+		minX = (float) Double.POSITIVE_INFINITY; 
+		maxX = (float) Double.NEGATIVE_INFINITY;
+		
+		for(Polygon p : polygons){
+			for(Vector3D v : p.vertices){
+				if(v.x > maxX)
+					maxX = v.x;
+				else if(v.x < minX)
+					minX = v.x;
+			}
+		}
+	}
 
 
 	/**
@@ -91,6 +132,34 @@ public class Scene {
 
 		public Color getReflectance() {
 			return reflectance;
+		}
+		
+		public int getArea(){
+			
+			//Calc Height - Width
+			float minY = (float) Double.POSITIVE_INFINITY; 
+			float maxY = (float) Double.NEGATIVE_INFINITY;
+			float minX = (float) Double.POSITIVE_INFINITY; 
+			float maxX = (float) Double.NEGATIVE_INFINITY;
+			
+			for(Vector3D v : vertices){
+				
+				if(v.x > maxX)
+					maxX = v.x;
+				else if(v.x < minX)
+					minX = v.x;
+				
+				if(v.y > maxY)
+					maxY = v.y;
+				else if(v.y < minY)
+					minY = v.y;
+				
+			}
+			
+			int base = Math.round(maxX - minX);
+			int height = Math.round(maxY - minY);
+			
+			return base * height/2;		
 		}
 
 		@Override

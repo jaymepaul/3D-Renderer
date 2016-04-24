@@ -18,7 +18,6 @@ public class Pipeline {
 
 	private static Vector3D VMinY;		//MinY Vector
 	private static Vector3D VMaxY;
-	private static Vector3D VMid;
 	public static int INF = (int)Double.POSITIVE_INFINITY;
 
 	/**
@@ -66,11 +65,11 @@ public class Pipeline {
 
 		Vector3D normal = a.unitVector().crossProduct(b.unitVector());		//Compute Normal to Surface
 	
-		float costh = Math.max(normal.unitVector().cosTheta(lightDirection.unitVector()), 0);	//Compute costh
+		float costh = Math.max(normal.unitVector().cosTheta(lightDirection.unitVector()), 0.0f);	//Compute costh
 		
-		int r = (int) ((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed() / 255.0) );
-		int g = (int) ((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen() / 255.0));
-		int bl = (int) ((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue() / 255.0));
+		int r = (int) Math.min(((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed()) / 255.0), 255);
+		int g = (int) Math.min(((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen()) / 255.0), 255);
+		int bl = (int) Math.min(((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue()) / 255.0) , 255);
 		
 		return new Color(r,g,bl);
 	}
@@ -121,7 +120,10 @@ public class Pipeline {
 
 		List<Polygon> polygons = scene.getPolygons();
 
-		Transform trans = Transform.newTranslation(20, 20, 20);
+		//Compute bounding box, translate accordingly
+		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
+		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
+		Transform trans = Transform.newTranslation(scene.getBoundingBox().shiftX(), scene.getBoundingBox().shiftY(), 0);
 
 		for(Polygon p : polygons){
 			for(int i = 0; i < p.getVertices().length; i++){
@@ -144,7 +146,10 @@ public class Pipeline {
 		// TODO fill this in.
 		List<Polygon> polygons = scene.getPolygons();
 
-		Transform scale = Transform.newScale(2, 2, 2);
+		//Compute bounding box, scale accordingly
+		float scaleFactor = scene.getBoundingBox().scaleFactor();
+		System.out.println("ScaleFACTOR: "+ scaleFactor);
+		Transform scale = Transform.newScale(scaleFactor, scaleFactor, scaleFactor);
 
 		for(Polygon p : polygons){
 			for(int i = 0; i < p.getVertices().length; i++){
@@ -162,72 +167,83 @@ public class Pipeline {
 	public static EdgeList computeEdgeList(Polygon poly) {
 		// TODO fill this in.
 
+		Vector3D[] vertices = poly.getVertices();
+		
+		int minY = getMinY(vertices);
+		int maxY = getMaxY(vertices);		//NOTE: Sets VMaxY VMinY Vectors
+		EdgeList edge = new EdgeList(minY, maxY);
+		
+		Vector3D VMidY = null;
+		for(Vector3D v : vertices){
+			if(v != VMinY && v != VMaxY)
+				VMidY = v;
+		}
+		Vector3D VStart = VMinY; Vector3D VEnd = VMaxY;
+		
+		//Along each edge:
+		while(true){
+			
+			float mx =	(float) ((((VEnd.x)) - VStart.x) / ((Math.floor(VEnd.y)) - Math.floor(VStart.y)));
+			float mz =  (float) ((((VEnd.z)) - (VStart.z)) / ((Math.floor(VEnd.y)) - (Math.floor(VStart.y))) );
+	
+			float x =  VStart.x; float z = VStart.z;	//Set x and z
+			int i = (int) Math.floor(VStart.y);	int maxI = (int) Math.floor(VEnd.y);
 
-		if(!isHidden(poly)){
-			Vector3D[] vertices = poly.getVertices();
-
-			int minY = getMinY(vertices);
-			int maxY = getMaxY(vertices);		//NOTE: Sets VMaxY VMinY Vectors
-
-			for(Vector3D v : vertices){
-				if(v != VMaxY && v != VMinY)
-					VMid = v;
+			while( i <= maxI){
+				
+				//Determine if left or right
+				if( x < edge.getLeftX(i))
+					edge.addRow(i, x, INF, z, INF);		//LEFT
+				if( x > edge.getRightX(i))
+					edge.addRow(i, INF, x, INF, z);		//RIGHT
+				
+				x += mx;
+				z += mz;
+				i++;
 			}
+			
+		
+			if( x < edge.getLeftX(maxI))							//ADD END
+				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);		//LEFT
+			else if( x > edge.getRightX(maxI))
+				edge.addRow(maxI, INF, VEnd.x, INF, VEnd.z);		//RIGHT
+			
+			
+			//Determine Next Edge
+			if(VStart == VMinY && VEnd == VMaxY){		//EDGE: VMinY - VMaxY
+				VEnd = VMidY;
+				continue;
+			}
+			else if(VStart == VMinY && VEnd == VMidY){	//EDGE: VMinY - VMidY
+				VStart = VMidY;	VEnd  = VMaxY;
+				continue;
+			}
+			else if(VStart == VMidY && VEnd == VMaxY)	//EDGE: VMidY - VMaxY
+				break;
+			
+			
+		}
+		return edge;
+	}
+	
+	public static Vector3D setMidX(Vector3D[] vertices){
+		
+		//Get max, min
+		float max = 0, min = INF;
 
-			EdgeList edge = new EdgeList(minY, maxY);
-
-			//How to determine left or right edge
-
-			updateEdgeList(edge, VMinY, VMaxY, VMid);	//Edge: MaxY - MinY
-			updateEdgeList(edge, VMinY, VMid, VMaxY);	//Edge: MinY - MidY
-			updateEdgeList(edge, VMid, VMaxY, VMinY);	//Edge: MidY - MaxY
-
-			return edge;
+		for(Vector3D v : vertices){
+			if(v.x > max)
+				max = v.x;
+			else if(v.x < min)
+				min = v.x;
 		}
 
-
+		for(Vector3D v : vertices){
+			if(v.x != max && v.x != min)
+				return v;
+		}
 
 		return null;
-	}
-
-	public static void updateEdgeList(EdgeList edge, Vector3D VStart, Vector3D VEnd, Vector3D refP){
-
-		//Floor = lowest integer - round down, ceiling = round up
-		
-		float mx =	(float) ((((VEnd.x)) - VStart.x) / ((Math.floor(VEnd.y)) - Math.floor(VStart.y)));
-		float mz =  (float) ((((VEnd.z)) - (VStart.z)) / ((Math.floor(VEnd.y)) - (Math.floor(VStart.y))) );
-
-		float x =  VStart.x; float z = VStart.z;		//Set x and z
-		int i = (int) VStart.y; int maxI = (int)VEnd.y;		//Set indices
-
-		while( i < maxI){
-
-			if(VStart == VMinY && VEnd == VMaxY && refP.x >= VStart.x && refP.x >= VEnd.x)
-				edge.addRow(i, x, INF, z, INF);
-			else{
-				if(VStart == VMinY && VEnd == VMid && refP.x >= VStart.x && refP.x >= VEnd.x)
-					edge.addRow(i, x, INF, z, INF);
-				else if(VStart == VMid && VEnd == VMaxY && refP.x >= VStart.x && refP.x <= VEnd.x)
-					edge.addRow(i, x, INF, z, INF);
-				else
-					edge.addRow(i, INF, x, INF, z);		//RIGHT
-			}
-			x += mx;
-			z += mz;			//Update values using gradient/slope
-
-			i++;
-		}
-
-		if(VStart == VMinY && VEnd == VMaxY && refP.x >= VStart.x && refP.x >= VEnd.x)		//Insert End
-			edge.addRow(maxI, VEnd.x, INF, VEnd.z,INF);
-		else{
-			if(VStart == VMinY && VEnd == VMid && refP.x >= VStart.x && refP.x >= VEnd.x)
-				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);
-			else if(VStart == VMid && VEnd == VMaxY && refP.x >= VStart.x && refP.x <= VEnd.x)
-				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);
-			else
-				edge.addRow(maxI, INF, VEnd.x, INF, VEnd.z);
-		}
 	}
 
 	/**Get minimum y-value from set of vertices*/
@@ -237,7 +253,7 @@ public class Pipeline {
 
 		for(Vector3D v : vertices){
 			if(v.y < minY){
-				minY = (int)v.y;
+				minY = (int) Math.floor(v.y);
 				VMinY = v;
 			}
 		}
@@ -248,11 +264,11 @@ public class Pipeline {
 	/**Get maximum y-value from set of vertices*/
 	public static int getMaxY(Vector3D[] vertices){
 
-		int maxY = 0;
+		int maxY = (int)Double.NEGATIVE_INFINITY;
 
 		for(Vector3D v : vertices){
 			if(v.y > maxY){
-				maxY = (int)v.y;
+				maxY = (int) Math.floor(v.y);
 				VMaxY = v;
 			}
 		}
@@ -281,22 +297,31 @@ public class Pipeline {
 	public static void computeZBuffer(Color[][] zBuffer, float[][] zDepth, EdgeList EL, Color polyColor) {
 		// TODO fill this in.
 
+		
 		for(int y = 0; y < EL.getEdgeListSize(); y++){
 
-			int x = (int) Math.floor(EL.getLeftX(y));	float z = EL.getLeftZ(y);
+			int x = (int) Math.floor(EL.getLeftX(y));		//CHECK: IF MAX IS RIGHT
+			float z = EL.getLeftZ(y);
 			float mz = (EL.getRightZ(y) - EL.getLeftZ(y)) / (EL.getRightX(y) - EL.getLeftX(y));
 			
-			while( x < Math.floor(EL.getRightX(y))){
-				if(z < zDepth[x][y]){
-					zDepth[x][y] = z;
-					zBuffer[x][y] = polyColor ;
+			if(x < INF && x > -INF){
+				while( x < (int)Math.floor(EL.getRightX(y))){		///Dont fill if outside edgeList boundaries
+					if(x < zBuffer[0].length && y < zBuffer.length){	
+						if(z < zDepth[x][y]){
+							zDepth[x][y] = z;
+							zBuffer[x][y] = polyColor;
+						}
+						
+					}
+					z += mz;
+					x++;
 				}
-				z += mz;
-				x++;
 			}
 		}
-
 	}
+	
+	
+	
 }
 
 // code for comp261 assignments
