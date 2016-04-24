@@ -15,8 +15,6 @@ public class Renderer extends GUI {
 
 	private Scene scene;
 	private float INF = (float) Double.POSITIVE_INFINITY;
-	private static double imageWidth = 0;
-	private static double imageHeight = 0;
 
 	@Override
 	protected void onLoad(File file) {
@@ -74,7 +72,9 @@ public class Renderer extends GUI {
 		
 		//=============TRANSLATE + SCALE=======================
 		
-
+		scene.computeBoundingBox();
+		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
+		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
 	}
 
 	@Override
@@ -84,30 +84,33 @@ public class Renderer extends GUI {
 		/*
 		 * This method should be used to rotate the user's viewpoint.
 		 */
-		float xRot = 0, yRot = 0;
 		if (ev.getKeyCode() == KeyEvent.VK_LEFT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
-			xRot -= 90;
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, xRot, yRot);
+			Pipeline.rotateScene(scene, 0, 30);
+			scene.computeBoundingBox();
+			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_RIGHT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'D'){
-			xRot += 90;
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, xRot, yRot);
+			Pipeline.rotateScene(scene, 0, 30);
+			scene.computeBoundingBox();
+			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_DOWN
 				|| Character.toUpperCase(ev.getKeyChar()) == 'S'){
-			yRot -= 90;
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, xRot, yRot);
+			Pipeline.rotateScene(scene, 30, 0);
+			scene.computeBoundingBox();
+			Pipeline.translateScene(scene);
 		}
 		else if(ev.getKeyCode() == KeyEvent.VK_UP
 				|| Character.toUpperCase(ev.getKeyChar()) == 'W'){
-			yRot += 90;
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, xRot, yRot);
+			Pipeline.rotateScene(scene, 30, 0);
+			scene.computeBoundingBox();
+			Pipeline.translateScene(scene);
 		}
 	}
 

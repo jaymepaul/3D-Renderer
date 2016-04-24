@@ -27,7 +27,6 @@ public class EdgeList {
 
 		this.startY = startY;
 		this.endY = endY;
-		//EndY is negative - must be positive size
 		this.edgeListArr = new float[endY+1][4];
 		
 		for(int row = 0; row < edgeListArr.length; row++){
