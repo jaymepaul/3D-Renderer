@@ -19,12 +19,14 @@ public class Scene {
 	private Vector3D lightPos;
 	private BoundingBox box;
 	private float minX, maxX, minY, maxY;
+	
+	private Vector3D[] lightSources;
 
 	public Scene(List<Polygon> polygons, Vector3D lightPos) {
           // TODO fill this in.
 		this.polygons = polygons;
 		this.lightPos = lightPos;
-		
+//		this.lightSources = lightSources;
 	}
 
 	public Vector3D getLight() {
@@ -47,6 +49,11 @@ public class Scene {
 		return box;
 	}
 	
+	
+	public Vector3D[] getLightSources() {
+		return lightSources;
+	}
+
 	public void setMaxMinY(){
 		
 		minY = (float) Double.POSITIVE_INFINITY; 
@@ -174,6 +181,8 @@ public class Scene {
 			return str;
 		}
 	}
+
+	
 }
 
 // code for COMP261 assignments

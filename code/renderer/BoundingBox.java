@@ -25,17 +25,11 @@ public class BoundingBox {
 	}
 	
 	public int shiftX(){	
-		if(Math.floor(centerX) > Math.floor(CANVAS_WIDTH / 2))		//SHIFT LEFT
-			return (int) (Math.floor(centerX) - Math.floor(CANVAS_WIDTH / 2));
-		else 
-			return (int) Math.floor((CANVAS_WIDTH / 2) - Math.floor(centerX));	//SHIFT RIGHT
+		return (int) Math.floor((CANVAS_WIDTH / 2) - Math.floor(centerX));	//SHIFT RIGHT
 	}
 	
-	public int shiftY(){
-		if(Math.floor(centerY) > Math.floor(CANVAS_HEIGHT / 2))
-			return (int) (Math.floor(centerY) - Math.floor(CANVAS_HEIGHT / 2));	//SHIFT DOWN
-		else 
-			return (int) Math.floor((CANVAS_HEIGHT / 2) - Math.floor(centerY));	//SHIFT UP
+	public int shiftY(){		
+		return (int) Math.floor((CANVAS_HEIGHT / 2) - Math.floor(centerY));	//SHIFT UP
 	}
 	
 	public float scaleFactor(){

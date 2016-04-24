@@ -20,9 +20,12 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A simple GUI, similar to the one in assignments 1 and 2, that you can base
@@ -70,6 +73,14 @@ public abstract class GUI {
 	public int[] getAmbientLight() {
 		return new int[] { red.getValue(), green.getValue(), blue.getValue() };
 	}
+	
+	public int[] getLightSource1() {
+		return new int[] { RL1.getValue(), GL1.getValue(), BL1.getValue() };
+	}
+	
+	public int[] getLightSource2() {
+		return new int[] { RL2.getValue(), GL2.getValue(), BL2.getValue() };
+	}
 
 	public static final int CANVAS_WIDTH = 600;
 	public static final int CANVAS_HEIGHT = 600;
@@ -84,6 +95,14 @@ public abstract class GUI {
 	private final JSlider red = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
 	private final JSlider green = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
 	private final JSlider blue = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
+	
+	private final JSlider RL1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+	private final JSlider GL1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+	private final JSlider BL1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+	
+	private final JSlider RL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
+	private final JSlider GL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
+	private final JSlider BL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
 
 	private static final Dimension DRAWING_SIZE = new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT);
 	private static final Dimension CONTROLS_SIZE = new Dimension(150, 600);
@@ -150,6 +169,7 @@ public abstract class GUI {
 		loadpanel.setPreferredSize(new Dimension(1000, 25));
 		loadpanel.add(load, BorderLayout.CENTER);
 
+
 		// set up the sliders for ambient light. they were instantiated in
 		// the field definition, as for some reason they need to be final to
 		// pull the set background trick.
@@ -159,11 +179,52 @@ public abstract class GUI {
 
 		JPanel sliderparty = new JPanel();
 		sliderparty.setLayout(new BoxLayout(sliderparty, BoxLayout.PAGE_AXIS));
-		sliderparty.setBorder(BorderFactory.createTitledBorder("Ambient Light"));
-
+		sliderparty.setBorder(BorderFactory.createTitledBorder(null, "Ambient Light", 0, 0, null, Color.white));
+		sliderparty.setBackground(Color.black);
+		
 		sliderparty.add(red);
 		sliderparty.add(green);
 		sliderparty.add(blue);
+		
+		red.addChangeListener( new SliderListener(this));
+		green.addChangeListener( new SliderListener(this));
+		blue.addChangeListener( new SliderListener(this));
+		
+		//Light Sources
+		JPanel lightSource1 = new JPanel();
+		lightSource1.setLayout(new BoxLayout(lightSource1, BoxLayout.PAGE_AXIS));
+		lightSource1.setBorder(BorderFactory.createTitledBorder(null, "Light Source 1", 0, 0, null, Color.white));
+		lightSource1.setBackground(Color.black);
+		
+		lightSource1.add(RL1);
+		lightSource1.add(GL1);
+		lightSource1.add(BL1);
+		
+		RL1.setBackground(new Color(230, 50, 50));
+		GL1.setBackground(new Color(50, 230, 50));
+		BL1.setBackground(new Color(50, 50, 230));
+		
+		RL1.addChangeListener( new SliderListener(this));
+		GL1.addChangeListener( new SliderListener(this));
+		BL1.addChangeListener( new SliderListener(this));
+		
+		JPanel lightSource2 = new JPanel();
+		lightSource2.setLayout(new BoxLayout(lightSource2, BoxLayout.PAGE_AXIS));
+		lightSource2.setBorder(BorderFactory.createTitledBorder(null, "Light Source 2", 0, 0, null, Color.white));
+		lightSource2.setBackground(Color.black);
+		
+		lightSource2.add(RL2);
+		lightSource2.add(GL2);
+		lightSource2.add(BL2);
+		
+		RL2.setBackground(new Color(230, 50, 50));
+		GL2.setBackground(new Color(50, 230, 50));
+		BL2.setBackground(new Color(50, 50, 230));
+		
+		RL2.addChangeListener( new SliderListener(this));
+		GL2.addChangeListener( new SliderListener(this));
+		BL2.addChangeListener( new SliderListener(this));
+		
 
 		// this is not a best-practices way of doing key listening; instead you
 		// should use either a KeyListener or an InputMap/ActionMap combo. but
@@ -189,10 +250,13 @@ public abstract class GUI {
 		controls.setLayout(new BoxLayout(controls, BoxLayout.PAGE_AXIS));
 		Border edge = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		controls.setBorder(edge);
+		controls.setBackground(Color.BLACK);
 
 		controls.add(loadpanel);
 		controls.add(Box.createRigidArea(new Dimension(0, 15)));
 		controls.add(sliderparty);
+		controls.add(lightSource1);
+		controls.add(lightSource2);
 		// if i were going to add more GUI components, i'd do it here.
 		controls.add(Box.createVerticalGlue());
 

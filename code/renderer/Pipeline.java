@@ -123,8 +123,9 @@ public class Pipeline {
 		//Compute bounding box, translate accordingly
 		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
 		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
+		
 		Transform trans = Transform.newTranslation(scene.getBoundingBox().shiftX(), scene.getBoundingBox().shiftY(), 0);
-
+		
 		for(Polygon p : polygons){
 			for(int i = 0; i < p.getVertices().length; i++){
 				Vector3D vertex = p.getVertices()[i];

@@ -37,6 +37,8 @@ public class Renderer extends GUI {
 			float zLight = Float.parseFloat(lightTokens[2]);
 
 			Vector3D lightVector = new Vector3D(xLight, yLight, zLight);
+			
+			
 			List<Scene.Polygon> polygons = new ArrayList<Scene.Polygon>();
 
 			while ((line = br.readLine()) != null) {
@@ -87,28 +89,28 @@ public class Renderer extends GUI {
 		if (ev.getKeyCode() == KeyEvent.VK_LEFT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 0, 30);
+			Pipeline.rotateScene(scene, 0, -10);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_RIGHT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'D'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 0, 30);
+			Pipeline.rotateScene(scene, 0, 10);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_DOWN
 				|| Character.toUpperCase(ev.getKeyChar()) == 'S'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 30, 0);
+			Pipeline.rotateScene(scene, -10, 0);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if(ev.getKeyCode() == KeyEvent.VK_UP
 				|| Character.toUpperCase(ev.getKeyChar()) == 'W'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 30, 0);
+			Pipeline.rotateScene(scene, 10, 0);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
@@ -139,8 +141,11 @@ public class Renderer extends GUI {
 		}
 		
 		Vector3D lightVect = scene.getLight();
-		Color lightColor = new Color(255, 255, 255); 	//WHITE
+		Color lightColor = new Color(getLightSource1()[0], getLightSource1()[1] , getLightSource1()[2]); 	//WHITE
 		Color ambientLight = new Color(getAmbientLight()[0], getAmbientLight()[1], getAmbientLight()[2]);
+		
+//		Color [] lightColors = new Color [3];
+//		lightColors[0] = lightColor;
 		
 		for(Scene.Polygon p : scene.getPolygons()){
 			if(!Pipeline.isHidden(p)){
