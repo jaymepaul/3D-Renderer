@@ -54,24 +54,31 @@ public class Pipeline {
 	 *            The ambient light in the scene, i.e. light that doesn't depend
 	 *            on the direction.
 	 */
-	public static Color getShading(Polygon poly, Vector3D lightDirection, Color lightColor, Color ambientLight) {
+	public static Color getShading(Polygon poly, Vector3D[] lightSources, Color[] lightColors, Color ambientLight) {
 		// TODO fill this in.
 
 		//Compute Surface Normal
 		Vector3D v1 = poly.vertices[0]; Vector3D v2 = poly.vertices[1]; Vector3D v3 = poly.vertices[2];
 
-		Vector3D a = (v2).minus(v1);			//NOTE: Normal OUTWARDS, CounterClockwise
-		Vector3D b = (v3).minus(v2);
+		Vector3D e1 = (v2).minus(v1);			//NOTE: Normal OUTWARDS, CounterClockwise
+		Vector3D e2 = (v3).minus(v2);
 
-		Vector3D normal = a.unitVector().crossProduct(b.unitVector());		//Compute Normal to Surface
+		Vector3D normal = e1.unitVector().crossProduct(e2.unitVector());		//Compute Normal to Surface
 	
-		float costh = Math.max(normal.unitVector().cosTheta(lightDirection.unitVector()), 0.0f);	//Compute costh
+		float iR =0.0f, iG =0.0f, iB = 0.0f;											//Compute Sum of Diffuse Light Reflection
+		for(int i = 0; i < lightSources.length; i++){
+			float costh = Math.max(normal.unitVector().cosTheta(lightSources[i]), 0.0f);
+			float pR = lightColors[i].getRed() * costh;		iR += pR;
+			float pG = lightColors[i].getGreen() * costh; 	iG += pG;
+			float pB = lightColors[i].getBlue() * costh; 	iB += pB;
+		}
 		
-		int r = (int) Math.min(((ambientLight.getRed() + lightColor.getRed() * costh) * (poly.reflectance.getRed()) / 255.0), 255);
-		int g = (int) Math.min(((ambientLight.getGreen() + lightColor.getGreen() * costh) * (poly.reflectance.getGreen()) / 255.0), 255);
-		int bl = (int) Math.min(((ambientLight.getBlue() +  lightColor.getBlue() * costh) * (poly.reflectance.getBlue()) / 255.0) , 255);
+
+		int r = (int) Math.min(((ambientLight.getRed() + iR) * (poly.reflectance.getRed()) / 255.0), 255);
+		int g = (int) Math.min(((ambientLight.getGreen() + iG) * (poly.reflectance.getGreen()) / 255.0), 255);
+		int b = (int) Math.min(((ambientLight.getBlue() +  iB) * (poly.reflectance.getBlue()) / 255.0) , 255);
 		
-		return new Color(r,g,bl);
+		return new Color(r,g,b);
 	}
 
 	/**
@@ -106,7 +113,12 @@ public class Pipeline {
 			}
 		}
 
-		return new Scene(polygons, Rot.multiply(scene.getLight()));
+		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
+			Vector3D rotV = Rot.multiply(scene.getLightSources()[i]);
+			scene.getLightSources()[i] = rotV;
+		}
+		
+		return new Scene(polygons, scene.getLightSources());
 	}
 
 	/**
@@ -132,8 +144,13 @@ public class Pipeline {
 				p.getVertices()[i] = trans.multiply(vertex);		//Apply transformation to vector
 			}
 		}
+		
+		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
+			Vector3D transV = trans.multiply(scene.getLightSources()[i]);
+			scene.getLightSources()[i] = transV;
+		}
 
-		return new Scene(polygons, trans.multiply(scene.getLight()));
+		return new Scene(polygons, scene.getLightSources());
 
 	}
 
@@ -158,7 +175,13 @@ public class Pipeline {
 				p.getVertices()[i] = scale.multiply(vertex);		//Apply transformation to vector
 			}
 		}
-		return new Scene(polygons, scale.multiply(scene.getLight()));
+		
+		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
+			Vector3D scaleV = scale.multiply(scene.getLightSources()[i]);
+			scene.getLightSources()[i] = scaleV;
+		}
+		
+		return new Scene(polygons, scene.getLightSources());
 	}
 
 	/**

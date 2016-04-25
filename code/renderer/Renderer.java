@@ -35,9 +35,13 @@ public class Renderer extends GUI {
 			float xLight = Float.parseFloat(lightTokens[0]);
 			float yLight = Float.parseFloat(lightTokens[1]);
 			float zLight = Float.parseFloat(lightTokens[2]);
-
-			Vector3D lightVector = new Vector3D(xLight, yLight, zLight);
 			
+			//============TEST=============// NOTE: Add LIGHT VECTOR TO FILE
+			Vector3D lightVector = new Vector3D(xLight, yLight, zLight);
+			Vector3D lightVector2 = new Vector3D(100.79056706f, -200.43019001f, -0.2113221f);
+			Vector3D lightVector3 = new Vector3D(-200.79056706f, 200.43019001f, -0.2113221f);
+			Vector3D [] lightSources = new Vector3D[3];
+			lightSources[0] = lightVector;	lightSources[1] = lightVector2;	lightSources[2] = lightVector3;
 			
 			List<Scene.Polygon> polygons = new ArrayList<Scene.Polygon>();
 
@@ -59,7 +63,7 @@ public class Renderer extends GUI {
 				polygons.add(polygon);
 			}
 
-			this.scene = new Scene(polygons, lightVector);
+			this.scene = new Scene(polygons, lightSources);
 			br.close();
 		} catch (IOException e) {
 			throw new RuntimeException("file reading failed.");
@@ -74,9 +78,6 @@ public class Renderer extends GUI {
 		
 		//=============TRANSLATE + SCALE=======================
 		
-		scene.computeBoundingBox();
-		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
-		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
 	}
 
 	@Override
@@ -140,16 +141,19 @@ public class Renderer extends GUI {
 			}
 		}
 		
-		Vector3D lightVect = scene.getLight();
+//		Vector3D lightVect = scene.getLight();
 		Color lightColor = new Color(getLightSource1()[0], getLightSource1()[1] , getLightSource1()[2]); 	//WHITE
+		Color lightColor2 = new Color(getLightSource2()[0], getLightSource2()[1], getLightSource2()[2]);
+		Color lightColor3 = new Color(getLightSource3()[0], getLightSource3()[1], getLightSource3()[2]);
 		Color ambientLight = new Color(getAmbientLight()[0], getAmbientLight()[1], getAmbientLight()[2]);
-		
-//		Color [] lightColors = new Color [3];
-//		lightColors[0] = lightColor;
+		Vector3D[] lightSources = scene.getLightSources();
+		Color [] lightColors = new Color[3];
+		lightColors[0] = lightColor;	lightColors[1] = lightColor2;	lightColors[2] = lightColor3;
 		
 		for(Scene.Polygon p : scene.getPolygons()){
 			if(!Pipeline.isHidden(p)){
-				Color shading  = Pipeline.getShading(p, lightVect, lightColor, ambientLight);
+				Color shading  = Pipeline.getShading(p, lightSources, lightColors, ambientLight);
+//				Color shading  = Pipeline.getShading(p, lightVect, lightColor, ambientLight);
 				EdgeList edgeList = Pipeline.computeEdgeList(p);
 				Pipeline.computeZBuffer(zBuffer, zDepth, edgeList, shading);
 			}

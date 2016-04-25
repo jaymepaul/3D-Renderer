@@ -81,6 +81,10 @@ public abstract class GUI {
 	public int[] getLightSource2() {
 		return new int[] { RL2.getValue(), GL2.getValue(), BL2.getValue() };
 	}
+	
+	public int[] getLightSource3() {
+		return new int[] { RL3.getValue(), GL3.getValue(), BL3.getValue() };
+	}
 
 	public static final int CANVAS_WIDTH = 600;
 	public static final int CANVAS_HEIGHT = 600;
@@ -100,9 +104,13 @@ public abstract class GUI {
 	private final JSlider GL1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
 	private final JSlider BL1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
 	
-	private final JSlider RL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
-	private final JSlider GL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
-	private final JSlider BL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 128);
+	private final JSlider RL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+	private final JSlider GL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+	private final JSlider BL2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+	
+	private final JSlider RL3 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+	private final JSlider GL3 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+	private final JSlider BL3 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
 
 	private static final Dimension DRAWING_SIZE = new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT);
 	private static final Dimension CONTROLS_SIZE = new Dimension(150, 600);
@@ -225,6 +233,23 @@ public abstract class GUI {
 		GL2.addChangeListener( new SliderListener(this));
 		BL2.addChangeListener( new SliderListener(this));
 		
+		JPanel lightSource3 = new JPanel();
+		lightSource3.setLayout(new BoxLayout(lightSource3, BoxLayout.PAGE_AXIS));
+		lightSource3.setBorder(BorderFactory.createTitledBorder(null, "Light Source 3", 0, 0, null, Color.white));
+		lightSource3.setBackground(Color.black);
+		
+		lightSource3.add(RL3);
+		lightSource3.add(GL3);
+		lightSource3.add(BL3);
+		
+		RL3.setBackground(new Color(230, 50, 50));
+		GL3.setBackground(new Color(50, 230, 50));
+		BL3.setBackground(new Color(50, 50, 230));
+		
+		RL3.addChangeListener( new SliderListener(this));
+		GL3.addChangeListener( new SliderListener(this));
+		BL3.addChangeListener( new SliderListener(this));
+		
 
 		// this is not a best-practices way of doing key listening; instead you
 		// should use either a KeyListener or an InputMap/ActionMap combo. but
@@ -257,6 +282,7 @@ public abstract class GUI {
 		controls.add(sliderparty);
 		controls.add(lightSource1);
 		controls.add(lightSource2);
+		controls.add(lightSource3);
 		// if i were going to add more GUI components, i'd do it here.
 		controls.add(Box.createVerticalGlue());
 

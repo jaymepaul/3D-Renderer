@@ -20,13 +20,13 @@ public class Scene {
 	private BoundingBox box;
 	private float minX, maxX, minY, maxY;
 	
-	private Vector3D[] lightSources;
+	private Vector3D[] lightSources;			//LightSources
 
-	public Scene(List<Polygon> polygons, Vector3D lightPos) {
+	public Scene(List<Polygon> polygons, Vector3D[] lightSources) {
           // TODO fill this in.
 		this.polygons = polygons;
-		this.lightPos = lightPos;
-//		this.lightSources = lightSources;
+//		this.lightPos = lightPos;
+		this.lightSources = lightSources;
 	}
 
 	public Vector3D getLight() {
