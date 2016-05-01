@@ -38,8 +38,8 @@ public class Renderer extends GUI {
 			
 			//============TEST=============// NOTE: Add LIGHT VECTOR TO FILE
 			Vector3D lightVector = new Vector3D(xLight, yLight, zLight);
-			Vector3D lightVector2 = new Vector3D(100.79056706f, -200.43019001f, -0.2113221f);
-			Vector3D lightVector3 = new Vector3D(-200.79056706f, 200.43019001f, -0.2113221f);
+			Vector3D lightVector2 = new Vector3D(100.79056706f, -200.43019001f, -1.5113221f);
+			Vector3D lightVector3 = new Vector3D(-200.79056706f, 100.43019001f, -0.9113221f);
 			Vector3D [] lightSources = new Vector3D[3];
 			lightSources[0] = lightVector;	lightSources[1] = lightVector2;	lightSources[2] = lightVector3;
 			
@@ -69,14 +69,16 @@ public class Renderer extends GUI {
 			throw new RuntimeException("file reading failed.");
 		}
 		
-		//=============TRANSLATE + SCALE=======================
+		//=============PRE TRANSLATE + SCALE=======================
 
 		scene.computeBoundingBox();
 		Pipeline.scaleScene(scene);
 		scene.computeBoundingBox();
+		Pipeline.rotateScene(scene, 0, 100);
+		scene.computeBoundingBox();
 		Pipeline.translateScene(scene);
 		
-		//=============TRANSLATE + SCALE=======================
+		//=============PRE TRANSLATE + SCALE=======================
 		
 	}
 
@@ -90,28 +92,28 @@ public class Renderer extends GUI {
 		if (ev.getKeyCode() == KeyEvent.VK_LEFT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'A'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 0, -10);
+			Pipeline.rotateScene(scene, 0, 0.3f);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_RIGHT
 				|| Character.toUpperCase(ev.getKeyChar()) == 'D'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 0, 10);
+			Pipeline.rotateScene(scene, 0, -0.3f);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if (ev.getKeyCode() == KeyEvent.VK_DOWN
 				|| Character.toUpperCase(ev.getKeyChar()) == 'S'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, -10, 0);
+			Pipeline.rotateScene(scene, 0.3f, 0);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
 		else if(ev.getKeyCode() == KeyEvent.VK_UP
 				|| Character.toUpperCase(ev.getKeyChar()) == 'W'){
 			scene.computeBoundingBox();
-			Pipeline.rotateScene(scene, 10, 0);
+			Pipeline.rotateScene(scene, -0.3f, 0);
 			scene.computeBoundingBox();
 			Pipeline.translateScene(scene);
 		}
@@ -133,15 +135,15 @@ public class Renderer extends GUI {
 		Color[][] zBuffer = new Color[CANVAS_WIDTH][CANVAS_HEIGHT];
 		float[][] zDepth = new float[CANVAS_WIDTH][CANVAS_HEIGHT];
 		
-		//Initialise
+		//Initialize Z-Buffer
 		for(int i = 0; i < zBuffer.length; i++){
 			for(int j = 0; j < zBuffer[i].length; j++){
-				zBuffer[i][j] = new Color(128,128,128);
+				zBuffer[i][j] = Color.BLACK;
 				zDepth[i][j] = INF;
 			}
 		}
 		
-//		Vector3D lightVect = scene.getLight();
+		//Illumination Variables
 		Color lightColor = new Color(getLightSource1()[0], getLightSource1()[1] , getLightSource1()[2]); 	//WHITE
 		Color lightColor2 = new Color(getLightSource2()[0], getLightSource2()[1], getLightSource2()[2]);
 		Color lightColor3 = new Color(getLightSource3()[0], getLightSource3()[1], getLightSource3()[2]);
@@ -150,10 +152,16 @@ public class Renderer extends GUI {
 		Color [] lightColors = new Color[3];
 		lightColors[0] = lightColor;	lightColors[1] = lightColor2;	lightColors[2] = lightColor3;
 		
+		//Compute Surface Normals
+		Pipeline.computeSurfaceNormals(scene.getPolygons());
+		//Compute Vertex Normals
+		Pipeline.computeVertexNormals(scene.getPolygons());
+		//Compute Light Intensity @ each Vertex
+		Pipeline.computeIntensityAtVertex(scene.getPolygons(), lightSources, lightColors, ambientLight);
+		
 		for(Scene.Polygon p : scene.getPolygons()){
 			if(!Pipeline.isHidden(p)){
 				Color shading  = Pipeline.getShading(p, lightSources, lightColors, ambientLight);
-//				Color shading  = Pipeline.getShading(p, lightVect, lightColor, ambientLight);
 				EdgeList edgeList = Pipeline.computeEdgeList(p);
 				Pipeline.computeZBuffer(zBuffer, zDepth, edgeList, shading);
 			}

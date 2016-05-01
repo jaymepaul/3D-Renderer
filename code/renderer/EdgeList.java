@@ -1,5 +1,6 @@
 package renderer;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class EdgeList {
 
 	private float[][] edgeListArr;
+	//private Object[][] edgeListArr;
 	private int startY;
 	private int endY;
 	private Map<Integer, Integer> indexMap;
@@ -28,12 +30,17 @@ public class EdgeList {
 		this.startY = startY;
 		this.endY = endY;
 		this.edgeListArr = new float[endY+1][4];
+		//this.edgeListArr = new Object[endY+1][6];
 		
 		for(int row = 0; row < edgeListArr.length; row++){
 			edgeListArr[row][0] = INF;
 			edgeListArr[row][1] = INF;
+			//edgeListArr[row][2] = null;
 			edgeListArr[row][2] = -INF;
 			edgeListArr[row][3] = INF;
+			//edgeListArr[row][3] = -INF;
+			//edgeListArr[row][4] = INF;
+			//edgeListArr[row][5] = null;
 		}
 		
 		this.indexMap = new LinkedHashMap<Integer, Integer>();
@@ -49,20 +56,19 @@ public class EdgeList {
 
 	/**Adds a row based on y value, inserts x and z value at appropriate indexes*/
 	public void addRow(int y, float xLeft, float xRight, float zLeft, float zRight){
-		
-//		int y = 0;
-//		if(i >= 0 && i < edgeListArr.length)
-//			y = i;
-//		else 
-//			y = getMappingIndex(i);
+	//public void addRow(int y, float xLeft, float zLeft, Color sL, float xRight, float zRight, Color sR)	
 		
 		if(xLeft != INF && zLeft != INF){
 			edgeListArr[y][0] = xLeft;
 			edgeListArr[y][1] = zLeft;			//Left List
+			//edgeListArr[y][2] = sL;
 		}
 		if(xRight != INF && zRight!= INF){
 			edgeListArr[y][2] = xRight;
 			edgeListArr[y][3] = zRight;		//Right List
+//			edgeListArr[y][3] = xRight;
+//			edgeListArr[y][4] = zRight;		//Right List
+			//edgeListArr[y][5] = sR;
 		}
 	}
 
@@ -78,38 +84,37 @@ public class EdgeList {
 
 	public float getLeftX(int y) {
 		// TODO fill this in.		
-//		if(indexMap.containsKey(y))
-//			return edgeListArr[getMappingIndex(y)][0];
-		
-		return edgeListArr[y][0];
+
+		return (float) edgeListArr[y][0];
 
 	}
 
 	public float getRightX(int y) {
 		// TODO fill this in.
 		
-//		if(indexMap.containsKey(y))
-//			return edgeListArr[getMappingIndex(y)][2];
-
-		return edgeListArr[y][2];
+		return (float) edgeListArr[y][2];
 	}
 
 	public float getLeftZ(int y) {
 		// TODO fill this in.
-//		if(indexMap.containsKey(y))
-//			return edgeListArr[getMappingIndex(y)][1];
 
-		return edgeListArr[y][1];
+		return (float) edgeListArr[y][1];
 	}
 
 	public float getRightZ(int y) {
 		// TODO fill this in.
-//		if(indexMap.containsKey(y))
-//			return edgeListArr[getMappingIndex(y)][3];
-
-		return edgeListArr[y][3];
+		 
+		return (float) edgeListArr[y][3];
 	}
-
+	
+//	public Color getLeftI(int y){
+//		return (Color) edgeListArr[y][2];
+//	}
+//
+//	public Color getRightI(int y){
+//		return (Color) edgeListArr[y][5];
+//	}
+	
 	public int getEdgeListSize(){
 		return edgeListArr.length;
 	}

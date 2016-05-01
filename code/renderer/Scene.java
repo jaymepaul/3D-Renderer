@@ -94,6 +94,7 @@ public class Scene {
 	public static class Polygon {
 		Vector3D[] vertices;
 		Color reflectance;
+		Vector3D surfaceNormal;		
 
 		/**
 		 * @param points
@@ -180,6 +181,16 @@ public class Scene {
 
 			return str;
 		}
+
+		public Vector3D getSurfaceNormal() {
+			return surfaceNormal;
+		}
+
+		public void setSurfaceNormal(Vector3D surfaceNormal) {
+			this.surfaceNormal = surfaceNormal;
+		}
+		
+		
 	}
 
 	

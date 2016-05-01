@@ -63,11 +63,11 @@ public class Pipeline {
 		Vector3D e1 = (v2).minus(v1);			//NOTE: Normal OUTWARDS, CounterClockwise
 		Vector3D e2 = (v3).minus(v2);
 
-		Vector3D normal = e1.unitVector().crossProduct(e2.unitVector());		//Compute Normal to Surface
+		Vector3D normal = e1.crossProduct(e2);		//Compute Normal to Surface
 	
 		float iR =0.0f, iG =0.0f, iB = 0.0f;											//Compute Sum of Diffuse Light Reflection
 		for(int i = 0; i < lightSources.length; i++){
-			float costh = Math.max(normal.unitVector().cosTheta(lightSources[i]), 0.0f);
+			float costh = Math.max(normal.unitVector().cosTheta(lightSources[i].unitVector()), 0.0f);
 			float pR = lightColors[i].getRed() * costh;		iR += pR;
 			float pG = lightColors[i].getGreen() * costh; 	iG += pG;
 			float pB = lightColors[i].getBlue() * costh; 	iB += pB;
@@ -113,10 +113,10 @@ public class Pipeline {
 			}
 		}
 
-		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
-			Vector3D rotV = Rot.multiply(scene.getLightSources()[i]);
-			scene.getLightSources()[i] = rotV;
-		}
+//		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
+//			Vector3D rotV = Rot.multiply(scene.getLightSources()[i]);
+//			scene.getLightSources()[i] = rotV;
+//		}
 		
 		return new Scene(polygons, scene.getLightSources());
 	}
@@ -133,9 +133,9 @@ public class Pipeline {
 		List<Polygon> polygons = scene.getPolygons();
 
 		//Compute bounding box, translate accordingly
-		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
-		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
-		
+//		System.out.println("CenterX: "+scene.getBoundingBox().centerX+" CenterY: "+scene.getBoundingBox().centerY+"MinX: "+scene.getBoundingBox().minX+" MaxX: "+scene.getBoundingBox().maxX+" MinY: "+scene.getBoundingBox().minY+" MaxY: "+scene.getBoundingBox().maxY);
+//		System.out.println("ShiftX: "+scene.getBoundingBox().shiftX() +","+ "ShiftY:"+scene.getBoundingBox().shiftY());
+
 		Transform trans = Transform.newTranslation(scene.getBoundingBox().shiftX(), scene.getBoundingBox().shiftY(), 0);
 		
 		for(Polygon p : polygons){
@@ -145,10 +145,10 @@ public class Pipeline {
 			}
 		}
 		
-		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
-			Vector3D transV = trans.multiply(scene.getLightSources()[i]);
-			scene.getLightSources()[i] = transV;
-		}
+//		for(int i = 0; i < scene.getLightSources().length; i++){			//Apply to light sources
+//			Vector3D transV = trans.multiply(scene.getLightSources()[i]);
+//			scene.getLightSources()[i] = transV;
+//		}
 
 		return new Scene(polygons, scene.getLightSources());
 
@@ -166,7 +166,7 @@ public class Pipeline {
 
 		//Compute bounding box, scale accordingly
 		float scaleFactor = scene.getBoundingBox().scaleFactor();
-		System.out.println("ScaleFACTOR: "+ scaleFactor);
+//		System.out.println("ScaleFACTOR: "+ scaleFactor);
 		Transform scale = Transform.newScale(scaleFactor, scaleFactor, scaleFactor);
 
 		for(Polygon p : polygons){
@@ -209,40 +209,57 @@ public class Pipeline {
 			
 			float mx =	(float) ((((VEnd.x)) - VStart.x) / ((Math.floor(VEnd.y)) - Math.floor(VStart.y)));
 			float mz =  (float) ((((VEnd.z)) - (VStart.z)) / ((Math.floor(VEnd.y)) - (Math.floor(VStart.y))) );
-	
+			
+				
 			float x =  VStart.x; float z = VStart.z;	//Set x and z
 			int i = (int) Math.floor(VStart.y);	int maxI = (int) Math.floor(VEnd.y);
-
+			
+			//Intensity - Ia (I.e. Left Side of Polygon)
+//			int rS = (int) Math.min((VStart.getLightIntensity().getRed() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getRed() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//			int gS = (int) Math.min((VStart.getLightIntensity().getGreen() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getGreen() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//			int bS = (int) Math.min((VStart.getLightIntensity().getBlue() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getBlue() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//			Color iS = new Color(rS,gS,bS);
+			
 			while( i <= maxI){
 				
 				//Determine if left or right
 				if( x < edge.getLeftX(i))
+//					edge.addRow(i, x, z, iS, INF, INF, null);
 					edge.addRow(i, x, INF, z, INF);		//LEFT
 				if( x > edge.getRightX(i))
+//					edge.addRow(i, INF, INF, null, x, z, iS);
 					edge.addRow(i, INF, x, INF, z);		//RIGHT
 				
 				x += mx;
 				z += mz;
 				i++;
+				
+//				rS = (int) Math.min((VStart.getLightIntensity().getRed() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getRed() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//				gS = (int) Math.min((VStart.getLightIntensity().getGreen() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getGreen() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//				bS = (int) Math.min((VStart.getLightIntensity().getBlue() * (i - VEnd.y) / (VStart.y - VEnd.y)) + (VEnd.getLightIntensity().getBlue() * (VStart.y - VEnd.y) / (VStart.y - VEnd.y)), 255);
+//				iS = new Color(rS, gS, bS);
+			
 			}
 			
 		
 			if( x < edge.getLeftX(maxI))							//ADD END
 				edge.addRow(maxI, VEnd.x, INF, VEnd.z, INF);		//LEFT
+//			edge.addRow(maxI, x, z, iS, INF, INF, null);
 			else if( x > edge.getRightX(maxI))
 				edge.addRow(maxI, INF, VEnd.x, INF, VEnd.z);		//RIGHT
+//			edge.addRow(maxI, INF, INF, null, x, z, iS);
 			
 			
 			//Determine Next Edge
-			if(VStart == VMinY && VEnd == VMaxY){		//EDGE: VMinY - VMaxY
+			if(VStart.equals(VMinY) && VEnd.equals(VMaxY)){		//EDGE: VMinY - VMaxY
 				VEnd = VMidY;
 				continue;
 			}
-			else if(VStart == VMinY && VEnd == VMidY){	//EDGE: VMinY - VMidY
+			else if(VStart.equals(VMinY) && VEnd.equals(VMidY)){	//EDGE: VMinY - VMidY
 				VStart = VMidY;	VEnd  = VMaxY;
 				continue;
 			}
-			else if(VStart == VMidY && VEnd == VMaxY)	//EDGE: VMidY - VMaxY
+			else if(VStart.equals(VMidY) && VEnd.equals(VMaxY))	//EDGE: VMidY - VMaxY
 				break;
 			
 			
@@ -326,23 +343,110 @@ public class Pipeline {
 
 			int x = (int) Math.floor(EL.getLeftX(y));		//CHECK: IF MAX IS RIGHT
 			float z = EL.getLeftZ(y);
+			
 			float mz = (EL.getRightZ(y) - EL.getLeftZ(y)) / (EL.getRightX(y) - EL.getLeftX(y));
 			
-			if(x < INF && x > -INF){
-				while( x < (int)Math.floor(EL.getRightX(y))){		///Dont fill if outside edgeList boundaries
-					if(x < zBuffer[0].length && y < zBuffer.length){	
-						if(z < zDepth[x][y]){
-							zDepth[x][y] = z;
-							zBuffer[x][y] = polyColor;
-						}
+			while( x < (int)Math.floor(EL.getRightX(y))){		///Dont fill if outside edgeList boundaries
+				if(x < zBuffer[0].length && y < zBuffer.length){	
+					if(z < zDepth[x][y]){
 						
-					}
-					z += mz;
-					x++;
+						zDepth[x][y] = z;
+						
+//						int rS = (int) Math.min((EL.getLeftI(y).getRed() * (EL.getRightX(y) - x)) + (EL.getRightI(y).getRed() * (x - EL.getLeftX(y)) / EL.getRightX(y) - EL.getLeftX(y)), 255); 
+//						int gS = (int) Math.min((EL.getLeftI(y).getGreen() * (EL.getRightX(y) - x)) + (EL.getRightI(y).getGreen() * (x - EL.getLeftX(y)) / EL.getRightX(y) - EL.getLeftX(y)), 255);
+//						int bS = (int) Math.min((EL.getLeftI(y).getBlue() * (EL.getRightX(y) - x)) + (EL.getRightI(y).getBlue() * (x - EL.getLeftX(y)) / EL.getRightX(y) - EL.getLeftX(y)), 255);
+//						
+//						zBuffer[x][y] = new Color(rS, gS, bS);
+						
+						zBuffer[x][y] = polyColor;
+					}		
 				}
+				z += mz;
+				x++;
 			}
 		}
 	}
+	
+	/**Computes all the surface normals for each polygon*/
+	public static void computeSurfaceNormals(List<Polygon> polygons){
+		
+		for(Polygon p : polygons){
+			
+			Vector3D v1 = p.vertices[0]; 
+			Vector3D v2 = p.vertices[1]; 
+			Vector3D v3 = p.vertices[2];
+
+			Vector3D e1 = (v2).minus(v1);		
+			Vector3D e2 = (v3).minus(v2);
+
+			p.setSurfaceNormal(e1.crossProduct(e2));		//Compute Normal to Surface
+
+		}
+	}
+	
+	/**Computes all the vertex normals for each vertex in a polygon*/
+	public static void computeVertexNormals(List<Polygon> polygons){
+		
+		for(Polygon p : polygons){
+			for(Vector3D v : p.vertices){
+
+				Vector3D vertexNormal = new Vector3D(0.0f, 0.0f, 0.0f);
+
+				for(Polygon pL : polygons){
+					for(Vector3D vL : pL.vertices){
+						if(vL.equals(v))
+							vertexNormal.plus(pL.getSurfaceNormal());
+					}
+				}
+				v.setVertexNormal(vertexNormal.unitVector());		//Normalize Vertex Normal
+			}
+		}
+		
+	}
+	
+	/**Computes the intensity at each vertex using the Phong Illumination Model
+	 * 
+	 * 		I= Iamb+Σk (Ikdiff+Ikspec)
+	 * 		where Ispec = 
+	 * 
+	 * */
+	public static void computeIntensityAtVertex(List<Polygon> polygons, Vector3D[] lightSources, Color[] lightColors, Color ambientLight){
+		
+		//Viewing Direction
+		Vector3D VD = new Vector3D(300,300,0);
+		
+		for(Polygon p : polygons){
+			for(Vector3D v : p.vertices){
+				
+				float iR =0.0f, iG =0.0f, iB = 0.0f;											//Compute Sum of Diffuse Light Reflection
+				for(int i = 0; i < lightSources.length; i++){
+					
+					float costh = Math.max(v.getVertexNormal().cosTheta(lightSources[i]), 0.0f);
+					
+					//R = (2L * N) N -L
+					Vector3D R = ((new Vector3D(2.0f,2.0f,2.0f).crossProduct(lightSources[i])).crossProduct(v.getVertexNormal())).crossProduct(v.getVertexNormal().minus(lightSources[i]));
+
+					float theta = R.cosTheta(VD);
+					float fi = (float) Math.pow(theta, 10);
+
+					float pR = (lightColors[i].getRed() * costh) + (lightColors[i].getRed() * fi);		iR += pR;
+					float pG = (lightColors[i].getGreen() * costh) + (lightColors[i].getGreen() * fi); 	iG += pG;
+					float pB = (lightColors[i].getBlue() * costh) + (lightColors[i].getBlue() * fi); 	iB += pB;
+				}
+				
+
+				int r = (int) Math.min(((ambientLight.getRed() + iR) * (p.reflectance.getRed()) / 255.0), 255);
+				int g = (int) Math.min(((ambientLight.getGreen() + iG) * (p.reflectance.getGreen()) / 255.0), 255);
+				int b = (int) Math.min(((ambientLight.getBlue() +  iB) * (p.reflectance.getBlue()) / 255.0) , 255);
+			
+				v.setLightIntensity(new Color(r,g,b));
+			
+			}
+		}
+		
+		
+	}
+	
 	
 	
 	

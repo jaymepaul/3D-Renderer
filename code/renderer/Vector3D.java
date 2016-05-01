@@ -1,4 +1,7 @@
 package renderer;
+
+import java.awt.Color;
+
 /**
  * An immutable 3D vector or position. Note that it is safe to make the fields
  * public because they are final and cannot be modified.
@@ -10,6 +13,9 @@ public class Vector3D {
 	public final float y;
 	public final float z;
 	public final float mag;
+	
+	public Vector3D vertexNormal;
+	public Color lightIntensity;
 
 	/**
 	 * Construct a new vector, with the specified x, y, z components computes
@@ -116,6 +122,25 @@ public class Vector3D {
 			return false;
 		return true;
 	}
+
+	public Vector3D getVertexNormal() {
+		return vertexNormal;
+	}
+
+	public void setVertexNormal(Vector3D vertexNormal) {
+		this.vertexNormal = vertexNormal;
+	}
+
+	public Color getLightIntensity() {
+		return lightIntensity;
+	}
+
+	public void setLightIntensity(Color lightIntensity) {
+		this.lightIntensity = lightIntensity;
+	}
+	
+	
+	
 }
 
 // code for comp261 assignments
